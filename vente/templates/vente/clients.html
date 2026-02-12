@@ -1,0 +1,24 @@
+{% extends 'vente/base.html' %}
+{% block content %}
+<h1>Clients</h1>
+<a href="{% url 'vente:ajouter_client' %}" class="btn btn-success mb-3">Ajouter</a>
+<table class="table table-striped">
+  <thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th><th>Actions</th></tr></thead>
+  <tbody>
+    {% for c in clients %}
+    <tr>
+      <td>{{ c.nom }}</td>
+      <td>{{ c.telephone }}</td>
+      <td>{{ c.email }}</td>
+      <td>
+        <a class="btn btn-sm btn-primary" href="{% url 'vente:modifier_client' c.pk %}">Modifier</a>
+        <a class="btn btn-sm btn-danger" href="{% url 'vente:supprimer_client' c.pk %}">Supprimer</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4">Aucun client.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+<a href="{% url 'vente:tableau_bord' %}" class="btn btn-secondary">Annuler</a>
+{% endblock %}

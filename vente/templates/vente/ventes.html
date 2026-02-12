@@ -1,0 +1,88 @@
+{% extends 'vente/base.html' %}
+{% block title %}Liste des ventes{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">🛒 Liste des ventes</h2>
+    <a class="btn btn-success shadow-sm" href="{% url 'vente:creer_vente' %}">
+      ➕ Créer une vente
+    </a>
+  </div>
+
+  <!-- Carte tableau -->
+  <div class="card shadow-lg border-0">
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for v in ventes %}
+            <tr>
+              <td class="fw-bold">{{ v.id }}</td>
+
+              <td>
+                {% if v.client %}
+                  {{ v.client.nom }}
+                {% else %}
+                  <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+
+              <td>{{ v.date_vente }}</td>
+
+              <td>
+                <span class="badge bg-success fs-6">
+                  {{ v.total }} $
+                </span>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-4">
+                <div class="alert alert-info mb-0">
+                  📭 Aucune vente enregistrée.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bouton retour -->
+  <div class="mt-4">
+    <a href="{% url 'vente:tableau_bord' %}" class="btn btn-outline-secondary">
+      ⬅ Retour au tableau de bord
+    </a>
+  </div>
+
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+.table th {
+    font-weight: 600;
+}
+.badge {
+    padding: 8px 12px;
+    border-radius: 8px;
+}
+</style>
+
+{% endblock %}

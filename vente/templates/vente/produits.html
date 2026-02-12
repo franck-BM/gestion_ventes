@@ -1,0 +1,152 @@
+{% extends 'vente/base.html' %}
+{% block title %}Produits{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-box2"></i> Liste des Produits</h2>
+    <a href="{% url 'vente:ajouter_produit' %}" class="btn btn-success shadow-sm">
+      <i class="bi bi-plus-circle"></i> Ajouter un produit
+    </a>
+  </div>
+
+  <!-- Statistiques rapides -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center border-0 shadow-sm">
+        <div class="card-body">
+          <h3 class="text-primary">{{ produits|length }}</h3>
+          <p class="text-muted">Produits total</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center border-0 shadow-sm">
+        <div class="card-body">
+          <h3 class="text-success">{{ produits|dictsort:"stock"|last }}</h3>
+          <p class="text-muted">Stock total</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carte tableau -->
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="bi bi-list-check"></i> Tous les produits</h5>
+    </div>
+    <div class="card-body">
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th><i class="bi bi-box"></i> Nom</th>
+              <th class="text-end"><i class="bi bi-tag"></i> Prix</th>
+              <th class="text-center"><i class="bi bi-bag"></i> Stock</th>
+              <th class="text-center"><i class="bi bi-exclamation-circle"></i> Seuil</th>
+              <th class="text-center">État</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in produits %}
+            <tr>
+              <td class="fw-semibold">
+                <strong>{{ p.nom }}</strong>
+                {% if p.description %}
+                <br><small class="text-muted">{{ p.description|truncatewords:5 }}</small>
+                {% endif %}
+              </td>
+
+              <td class="text-end">
+                <span class="badge bg-info fs-6">
+                  {{ p.prix }} DH
+                </span>
+              </td>
+
+              <td class="text-center">
+                <strong class="fs-5">{{ p.stock }}</strong> unité(s)
+              </td>
+
+              <td class="text-center">
+                <small class="text-muted">⚠ {{ p.seuil_alerte }}</small>
+              </td>
+
+              <td class="text-center">
+                {% if p.stock == 0 %}
+                  <span class="badge bg-danger">Rupture</span>
+                {% elif p.stock <= p.seuil_alerte %}
+                  <span class="badge bg-warning text-dark">Stock faible</span>
+                {% else %}
+                  <span class="badge bg-success">OK</span>
+                {% endif %}
+              </td>
+
+              <td class="text-center">
+                <div class="btn-group" role="group">
+                  <a class="btn btn-sm btn-outline-primary"
+                     href="{% url 'vente:modifier_produit' p.pk %}"
+                     title="Modifier">
+                     <i class="bi bi-pencil"></i>
+                  </a>
+
+                  <a class="btn btn-sm btn-outline-danger"
+                     href="{% url 'vente:supprimer_produit' p.pk %}"
+                     title="Supprimer">
+                     <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4">
+                <div class="alert alert-info mb-0">
+                  <i class="bi bi-inbox"></i> Aucun produit enregistré.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Retour -->
+  <div class="mt-4">
+    <a href="{% url 'vente:tableau_bord' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+    </a>
+  </div>
+
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+.badge {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+.table th {
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+.btn-group .btn {
+    margin: 0 2px;
+}
+</style>
+
+{% endblock %}

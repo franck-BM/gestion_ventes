@@ -1,0 +1,203 @@
+{% extends 'vente/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1><i class="bi bi-basket2"></i> Créer une nouvelle vente</h1>
+        </div>
+    </div>
+
+    <!-- Alertes de stock faible -->
+    {% if produits_seuil %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <strong><i class="bi bi-exclamation-triangle"></i> Attention - Stock faible:</strong>
+        <ul class="mb-0 mt-2">
+            {% for p in produits_seuil %}
+            <li>{{ p.nom }}: <strong>{{ p.stock }}</strong> unités (seuil: {{ p.seuil_alerte }})</li>
+            {% endfor %}
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <form method="post" id="vente-form">
+        {% csrf_token %}
+        
+        <!-- Informations du client -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person"></i> Informations du client</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        {{ form.client }}
+                        {% if form.client.errors %}
+                        <div class="text-danger small">{{ form.client.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-check mt-2">
+                            {{ form.paiement_effectue }}
+                            <label class="form-check-label" for="{{ form.paiement_effectue.id_for_label }}">
+                                Paiement effectué
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lignes de vente -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-cart3"></i> Articles de la vente</h5>
+            </div>
+            <div class="card-body">
+                {{ formset.management_form }}
+                
+                {% if formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {% for error in formset.non_form_errors %}
+                    {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produit</th>
+                                <th class="text-center">Stock dispo.</th>
+                                <th class="text-end">Quantité</th>
+                                <th class="text-end">Prix unitaire</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-center">Supprimer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for f in formset.forms %}
+                            <tr class="form-row">
+                                <td>{{ f.produit }}</td>
+                                <td class="text-center">
+                                    <span id="stock-{{ forloop.counter0 }}" class="badge bg-info">-</span>
+                                </td>
+                                <td class="text-end">{{ f.quantite }}</td>
+                                <td class="text-end">{{ f.prix_unitaire }}</td>
+                                <td class="text-end">
+                                    <span id="total-{{ forloop.counter0 }}">0.00</span> DH
+                                </td>
+                                <td class="text-center">{{ f.DELETE }}</td>
+                            </tr>
+                            {% if f.errors %}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="text-danger small">
+                                        {% for error in f.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Résumé -->
+                <div class="row mt-4 border-top pt-3">
+                    <div class="col-md-8"></div>
+                    <div class="col-md-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong>Total:</strong>
+                            <span id="total-general" class="badge bg-success fs-5">0.00 DH</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-lg btn-success">
+                <i class="bi bi-check-circle"></i> Enregistrer la vente
+            </button>
+            <a href="{% url 'vente:liste_ventes' %}" class="btn btn-lg btn-secondary">
+                <i class="bi bi-x-circle"></i> Annuler
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Script pour les calculs et stocks -->
+<script>
+const produits = {{ produits_json|safe }};
+
+// Récupérer les données des produits
+function getProduitData(produitId) {
+    // Supposons que vous passez les données des produits en JSON
+    return {
+        prix: 0,
+        stock: 0
+    };
+}
+
+// Initialiser les événements
+document.addEventListener('DOMContentLoaded', function() {
+    // Met à jour le total à chaque changement
+    const form = document.getElementById('vente-form');
+    if (form) {
+        form.addEventListener('change', function() {
+            updateTotals();
+        });
+    }
+    
+    updateTotals();
+});
+
+function updateTotals() {
+    let totalGeneral = 0;
+    const rows = document.querySelectorAll('.form-row');
+    
+    rows.forEach((row, index) => {
+        const quantiteInput = row.querySelector('input[name="lignevente_set-' + index + '-quantite"]');
+        const prixInput = row.querySelector('input[name="lignevente_set-' + index + '-prix_unitaire"]');
+        const totalCell = document.getElementById('total-' + index);
+        
+        if (quantiteInput && prixInput && totalCell) {
+            const quantite = parseFloat(quantiteInput.value) || 0;
+            const prix = parseFloat(prixInput.value) || 0;
+            const total = (quantite * prix).toFixed(2);
+            totalCell.textContent = total;
+            totalGeneral += parseFloat(total);
+        }
+    });
+    
+    const totalElement = document.getElementById('total-general');
+    if (totalElement) {
+        totalElement.textContent = totalGeneral.toFixed(2) + ' DH';
+    }
+}
+</script>
+
+<style>
+.form-row select {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+.form-row input {
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    text-align: right;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

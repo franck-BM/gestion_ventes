@@ -1,0 +1,11 @@
+{% extends 'vente/base.html' %}
+{% block title %}Ajouter / Modifier Produit{% endblock %}
+{% block content %}
+<h1>{% if produit %}Modifier{% else %}Ajouter{% endif %} Produit</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Enregistrer</button>
+  <a href="{% url 'vente:liste_produits' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}

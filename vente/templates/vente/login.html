@@ -1,0 +1,22 @@
+{% extends 'vente/base.html' %}
+{% block title %}Connexion{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-4">
+    <h3>Connexion</h3>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="mb-3">
+        <label class="form-label">Nom d'utilisateur</label>
+        {{ form.username }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mot de passe</label>
+        {{ form.password }}
+      </div>
+      <button type="submit" class="btn btn-primary">Se connecter</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
