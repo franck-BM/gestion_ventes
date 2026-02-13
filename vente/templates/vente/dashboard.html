@@ -87,6 +87,57 @@
         </div>
     </div>
 
+    <!-- Statistiques des 24 dernières heures -->
+    <div class="mb-5">
+        <h3 class="mb-3">📊 Dernières 24 heures</h3>
+        <div class="row g-4">
+            <!-- CA 24h -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-2">CA (24h)</h6>
+                                <h3 class="mb-0">{{ total_ca_24h|floatformat:2 }} Fc</h3>
+                            </div>
+                            <i class="bi bi-cash-coin fs-2 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ventes 24h -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #fa714f 0%, #feca57 100%);">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-2">Ventes (24h)</h6>
+                                <h3 class="mb-0">{{ ventes_count_24h }}</h3>
+                            </div>
+                            <i class="bi bi-cart4 fs-2 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Produits vendus 24h -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm h-100" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <div class="card-body text-white">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="card-title text-white-50 mb-2">Produits vendus (24h)</h6>
+                                <h3 class="mb-0">{{ produits_vendus_24h }}</h3>
+                            </div>
+                            <i class="bi bi-box-seam fs-2 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Alertes et Graphiques -->
     <div class="row g-4 mb-5">
         <!-- Alertes stock faible -->

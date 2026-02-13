@@ -279,11 +279,11 @@
     <a href="{% url 'vente:liste_clients' %}" class="{% if request.resolver_match.url_name == 'liste_clients' %}active{% endif %}">
       <i class="bi bi-people"></i> <span>Clients</span>
     </a>
+    <a href="{% url 'vente:liste_ventes' %}" class="{% if request.resolver_match.url_name == 'liste_ventes' %}active{% endif %}">
+      <i class="bi bi-cart-check"></i> <span>Ventes</span>
     <a href="{% url 'vente:clients_achetes' %}" class="{% if request.resolver_match.url_name == 'clients_achetes' %}active{% endif %}">
       <i class="bi bi-people-check"></i> <span>Clients Acheteurs</span>
     </a>
-    <a href="{% url 'vente:liste_ventes' %}" class="{% if request.resolver_match.url_name == 'liste_ventes' %}active{% endif %}">
-      <i class="bi bi-cart-check"></i> <span>Ventes</span>
     </a>
     
     <!-- Rapports -->

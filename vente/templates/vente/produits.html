@@ -12,24 +12,10 @@
     </a>
   </div>
 
-  <!-- Statistiques rapides -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card text-center border-0 shadow-sm">
-        <div class="card-body">
-          <h3 class="text-primary">{{ produits|length }}</h3>
-          <p class="text-muted">Produits total</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card text-center border-0 shadow-sm">
-        <div class="card-body">
-          <h3 class="text-success">{{ produits|dictsort:"stock"|last }}</h3>
-          <p class="text-muted">Stock total</p>
-        </div>
-      </div>
-    </div>
+  <!-- Debug Info -->
+  <div class="alert alert-info">
+    <strong>Total produits:</strong> {{ total_produits }} | <strong>Stock total:</strong> {{ total_stock }}
+    <br><strong>Page actuelle:</strong> {{ produits.number }} / {{ produits.paginator.num_pages }}
   </div>
 
   <!-- Carte tableau -->
@@ -38,7 +24,6 @@
       <h5 class="mb-0"><i class="bi bi-list-check"></i> Tous les produits</h5>
     </div>
     <div class="card-body">
-
       <div class="table-responsive">
         <table class="table table-hover align-middle">
           <thead class="table-light">
@@ -60,21 +45,15 @@
                 <br><small class="text-muted">{{ p.description|truncatewords:5 }}</small>
                 {% endif %}
               </td>
-
               <td class="text-end">
-                <span class="badge bg-info fs-6">
-                  {{ p.prix }} Fc
-                </span>
+                <span class="badge bg-info fs-6">{{ p.prix }} Fc</span>
               </td>
-
               <td class="text-center">
                 <strong class="fs-5">{{ p.stock }}</strong> unité(s)
               </td>
-
               <td class="text-center">
                 <small class="text-muted">⚠ {{ p.seuil_alerte }}</small>
               </td>
-
               <td class="text-center">
                 {% if p.stock == 0 %}
                   <span class="badge bg-danger">Rupture</span>
@@ -84,7 +63,6 @@
                   <span class="badge bg-success">OK</span>
                 {% endif %}
               </td>
-
               <td class="text-center">
                 <div class="btn-group" role="group">
                   <a class="btn btn-sm btn-outline-primary"
@@ -92,7 +70,6 @@
                      title="Modifier">
                      <i class="bi bi-pencil"></i>
                   </a>
-
                   <a class="btn btn-sm btn-outline-danger"
                      href="{% url 'vente:supprimer_produit' p.pk %}"
                      title="Supprimer">
@@ -101,11 +78,10 @@
                 </div>
               </td>
             </tr>
-
             {% empty %}
             <tr>
               <td colspan="6" class="text-center py-4">
-                <div class="alert alert-info mb-0">
+                <div class="alert alert-warning mb-0">
                   <i class="bi bi-inbox"></i> Aucun produit enregistré.
                 </div>
               </td>
@@ -114,9 +90,57 @@
           </tbody>
         </table>
       </div>
-
     </div>
   </div>
+
+  <!-- Pagination -->
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if produits.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1">Première</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ produits.previous_page_number }}">Précédente</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Première</span>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Précédente</span>
+        </li>
+      {% endif %}
+
+      {% for num in produits.paginator.page_range %}
+        {% if produits.number == num %}
+          <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% else %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if produits.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ produits.next_page_number }}">Suivante</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ produits.paginator.num_pages }}">Dernière</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Suivante</span>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Dernière</span>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
 
   <!-- Retour -->
   <div class="mt-4">

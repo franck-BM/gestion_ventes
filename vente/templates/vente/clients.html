@@ -1,24 +1,146 @@
 {% extends 'vente/base.html' %}
 {% block content %}
-<h1>Clients</h1>
-<a href="{% url 'vente:ajouter_client' %}" class="btn btn-success mb-3">Ajouter</a>
-<table class="table table-striped">
-  <thead><tr><th>Nom</th><th>Téléphone</th><th>Email</th><th>Actions</th></tr></thead>
-  <tbody>
-    {% for c in clients %}
-    <tr>
-      <td>{{ c.nom }}</td>
-      <td>{{ c.telephone }}</td>
-      <td>{{ c.email }}</td>
-      <td>
-        <a class="btn btn-sm btn-primary" href="{% url 'vente:modifier_client' c.pk %}">Modifier</a>
-        <a class="btn btn-sm btn-danger" href="{% url 'vente:supprimer_client' c.pk %}">Supprimer</a>
-      </td>
-    </tr>
-    {% empty %}
-    <tr><td colspan="4">Aucun client.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
-<a href="{% url 'vente:tableau_bord' %}" class="btn btn-secondary">Annuler</a>
+<div class="container mt-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold"><i class="bi bi-people"></i> Liste des Clients</h2>
+    <a href="{% url 'vente:ajouter_client' %}" class="btn btn-success shadow-sm">
+      <i class="bi bi-plus-circle"></i> Ajouter un client
+    </a>
+  </div>
+
+  <!-- Debug Info -->
+  <div class="alert alert-info">
+    <strong>Total clients:</strong> {{ total_clients }}
+    <br><strong>Page actuelle:</strong> {{ clients.number }} / {{ clients.paginator.num_pages }}
+  </div>
+
+  <!-- Carte tableau -->
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0"><i class="bi bi-list-check"></i> Tous les clients</h5>
+    </div>
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th><i class="bi bi-person"></i> Nom</th>
+              <th><i class="bi bi-telephone"></i> Téléphone</th>
+              <th><i class="bi bi-envelope"></i> Email</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in clients %}
+            <tr>
+              <td class="fw-semibold">{{ c.nom }}</td>
+              <td>{{ c.telephone }}</td>
+              <td>{{ c.email }}</td>
+              <td class="text-center">
+                <div class="btn-group" role="group">
+                  <a class="btn btn-sm btn-outline-primary" 
+                     href="{% url 'vente:modifier_client' c.pk %}"
+                     title="Modifier">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <a class="btn btn-sm btn-outline-danger" 
+                     href="{% url 'vente:supprimer_client' c.pk %}"
+                     title="Supprimer">
+                    <i class="bi bi-trash"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-4">
+                <div class="alert alert-warning mb-0">
+                  <i class="bi bi-inbox"></i> Aucun client enregistré.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if clients.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page=1">Première</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ clients.previous_page_number }}">Précédente</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Première</span>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Précédente</span>
+        </li>
+      {% endif %}
+
+      {% for num in clients.paginator.page_range %}
+        {% if clients.number == num %}
+          <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% else %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+          </li>
+        {% endif %}
+      {% endfor %}
+
+      {% if clients.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ clients.next_page_number }}">Suivante</a>
+        </li>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ clients.paginator.num_pages }}">Dernière</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Suivante</span>
+        </li>
+        <li class="page-item disabled">
+          <span class="page-link">Dernière</span>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  <!-- Retour -->
+  <div class="mt-4">
+    <a href="{% url 'vente:tableau_bord' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Retour au tableau de bord
+    </a>
+  </div>
+
+</div>
+
+<style>
+.card {
+    border-radius: 15px;
+}
+.table th {
+    font-weight: 600;
+    border-bottom: 2px solid #dee2e6;
+}
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+}
+.btn-group .btn {
+    margin: 0 2px;
+}
+</style>
+
 {% endblock %}

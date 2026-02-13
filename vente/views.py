@@ -10,6 +10,7 @@ from django.utils import timezone
 from datetime import timedelta
 import json
 from django.http import HttpResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -26,25 +27,32 @@ from datetime import datetime
 # -----------------------
 @login_required
 def tableau_bord(request):
-    # Statistiques de base
+    # Statistiques de base (tous les temps)
     produits_count = Produit.objects.count()
     clients_count = Client.objects.count()
     ventes_count = Vente.objects.count()
     total_ca = sum([v.total for v in Vente.objects.all()])  # petit calcul
     
-    # Statistiques de produits vendus
+    # Statistiques des 24 dernières heures
+    date_24h = timezone.now() - timedelta(hours=24)
+    ventes_24h = Vente.objects.filter(date_vente__gte=date_24h)
+    ventes_count_24h = ventes_24h.count()
+    total_ca_24h = ventes_24h.aggregate(total=Sum('total'))['total'] or 0
+    produits_vendus_24h = ventes_24h.aggregate(total=Sum('lignes__quantite'))['total'] or 0
+    
+    # Statistiques de produits vendus (tous les temps)
     produits_vendus = LigneVente.objects.aggregate(total=Sum('quantite'))['total'] or 0
     
     # Produits avec stock faible
     produits_seuil = Produit.objects.filter(stock__lte=F('seuil_alerte')).order_by('stock')
     
-    # Top 5 produits les plus vendus
-    top_produits = LigneVente.objects.values('produit__nom').annotate(
+    # Top 5 produits les plus vendus (24h)
+    top_produits = LigneVente.objects.filter(vente__date_vente__gte=date_24h).values('produit__nom').annotate(
         quantite_totale=Sum('quantite')
     ).order_by('-quantite_totale')[:5]
     
-    # Top 5 clients
-    top_clients = Vente.objects.values('client__nom').annotate(
+    # Top 5 clients (24h)
+    top_clients = Vente.objects.filter(date_vente__gte=date_24h).values('client__nom').annotate(
         nb_achats=Count('id'),
         montant_total=Sum('total')
     ).filter(client__isnull=False).order_by('-montant_total')[:5]
@@ -79,6 +87,9 @@ def tableau_bord(request):
         'clients_count': clients_count,
         'ventes_count': ventes_count,
         'total_ca': total_ca,
+        'ventes_count_24h': ventes_count_24h,
+        'total_ca_24h': total_ca_24h,
+        'produits_vendus_24h': produits_vendus_24h,
         'produits_vendus': produits_vendus,
         'produits_seuil': produits_seuil,
         'top_produits': top_produits,
@@ -95,8 +106,24 @@ def tableau_bord(request):
 # -----------------------
 @login_required
 def liste_produits(request):
-    produits = Produit.objects.all().order_by('nom')
-    return render(request, 'vente/produits.html', {'produits': produits})
+    produits_list = Produit.objects.all().order_by('-id')
+    paginator = Paginator(produits_list, 5)  # 5 produits par page
+    page = request.GET.get('page')
+    try:
+        produits = paginator.page(page)
+    except PageNotAnInteger:
+        produits = paginator.page(1)
+    except EmptyPage:
+        produits = paginator.page(paginator.num_pages)
+    
+    total_produits = Produit.objects.count()
+    total_stock = Produit.objects.aggregate(total=Sum('stock'))['total'] or 0
+    
+    return render(request, 'vente/produits.html', {
+        'produits': produits,
+        'total_produits': total_produits,
+        'total_stock': total_stock
+    })
 
 @login_required
 def ajouter_produit(request):
@@ -137,8 +164,22 @@ def supprimer_produit(request, pk):
 # -----------------------
 @login_required
 def liste_clients(request):
-    clients = Client.objects.all().order_by('nom')
-    return render(request, 'vente/clients.html', {'clients': clients})
+    clients_list = Client.objects.all().order_by('-id')
+    paginator = Paginator(clients_list, 5)  # 5 clients par page
+    page = request.GET.get('page')
+    try:
+        clients = paginator.page(page)
+    except PageNotAnInteger:
+        clients = paginator.page(1)
+    except EmptyPage:
+        clients = paginator.page(paginator.num_pages)
+    
+    total_clients = Client.objects.count()
+    
+    return render(request, 'vente/clients.html', {
+        'clients': clients,
+        'total_clients': total_clients
+    })
 
 @login_required
 def ajouter_client(request):
@@ -179,8 +220,47 @@ def supprimer_client(request, pk):
 # -----------------------
 @login_required
 def liste_ventes(request):
-    ventes = Vente.objects.all().order_by('-date_vente')
-    return render(request, 'vente/ventes.html', {'ventes': ventes})
+    ventes_list = Vente.objects.all().order_by('-date_vente')
+    
+    # Filtre par date
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    if date_from:
+        try:
+            from datetime import datetime
+            date_from_obj = datetime.strptime(date_from, '%Y-%m-%d')
+            ventes_list = ventes_list.filter(date_vente__date__gte=date_from_obj.date())
+        except:
+            pass
+    
+    if date_to:
+        try:
+            from datetime import datetime
+            date_to_obj = datetime.strptime(date_to, '%Y-%m-%d')
+            ventes_list = ventes_list.filter(date_vente__date__lte=date_to_obj.date())
+        except:
+            pass
+    
+    paginator = Paginator(ventes_list, 5)  # 5 ventes par page
+    page = request.GET.get('page')
+    try:
+        ventes = paginator.page(page)
+    except PageNotAnInteger:
+        ventes = paginator.page(1)
+    except EmptyPage:
+        ventes = paginator.page(paginator.num_pages)
+    
+    total_ventes = Vente.objects.count()
+    total_ca = Vente.objects.aggregate(total=Sum('total'))['total'] or 0
+    
+    return render(request, 'vente/ventes.html', {
+        'ventes': ventes,
+        'total_ventes': total_ventes,
+        'total_ca': total_ca,
+        'date_from': date_from,
+        'date_to': date_to
+    })
 
 @login_required
 def creer_vente(request):
