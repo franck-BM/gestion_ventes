@@ -459,7 +459,7 @@ def exporter_ventes_pdf(request):
     total_montant = sum(v.total for v in ventes)
     stats_data = [
         ['Total de ventes:', str(ventes.count())],
-        ['Montant total généré:', f"{total_montant:.2f} DZD"],
+        ['Montant total généré:', f"{total_montant:.2f} FC"],
         ['Nombre de lignes vendues:', str(LigneVente.objects.count())]
     ]
     stats_table = Table(stats_data, colWidths=[3*inch, 2*inch])
@@ -484,7 +484,7 @@ def exporter_ventes_pdf(request):
             f"#{vente.id}",
             vente.client.nom if vente.client else 'N/A',
             vente.date_vente.strftime('%d/%m/%Y'),
-            f"{vente.total:.2f} DZD",
+            f"{vente.total:.2f} Fc",
             produits[:50] + '...' if len(produits) > 50 else produits
         ])
     

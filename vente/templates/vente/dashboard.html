@@ -7,7 +7,7 @@
     <!-- Titre -->
     <div class="mb-4">
         <h1 class="display-6 fw-bold text-primary">
-            <i class="bi bi-speedometer2"></i> Dashboard
+            <i class="bi bi-speedometer2"></i> MAISON BIG-FALOS
         </h1>
         <p class="text-muted">Vue d'ensemble de votre activité de vente</p>
     </div>
@@ -21,7 +21,7 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <h6 class="card-title text-white-50 mb-2">Chiffre d'Affaires</h6>
-                            <h3 class="mb-0">{{ total_ca|floatformat:2 }} DH</h3>
+                            <h3 class="mb-0">{{ total_ca|floatformat:2 }} Fc</h3>
                         </div>
                         <i class="bi bi-currency-exchange fs-2 opacity-50"></i>
                     </div>
@@ -190,7 +190,7 @@
                                     <h6 class="mb-1">{{ forloop.counter }}. {{ item.client__nom }}</h6>
                                     <small class="text-muted">{{ item.nb_achats }} achat{{ item.nb_achats|pluralize }}</small>
                                 </div>
-                                <span class="badge bg-success">{{ item.montant_total|floatformat:0 }} DH</span>
+                                <span class="badge bg-success">{{ item.montant_total|floatformat:0 }} Fc</span>
                             </div>
                         </div>
                         {% endfor %}
